@@ -35,7 +35,7 @@ async function listNotifications(
   client: StandShareClient,
   input: NotificationsInput
 ): Promise<ToolResult> {
-  const params: Record<string, unknown> = {};
+  const params: Record<string, string | number | boolean | undefined> = {};
   if (input.unreadOnly !== undefined) params.unreadOnly = input.unreadOnly;
 
   const data = await client.get<

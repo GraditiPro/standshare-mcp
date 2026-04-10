@@ -156,7 +156,7 @@ async function availability(client: StandShareClient, input: WorkersInput): Prom
 async function attendanceHistory(client: StandShareClient, input: WorkersInput): Promise<ToolResult> {
   if (!input.userId) return toolError("userId is required for attendance_history action");
 
-  const params: Record<string, unknown> = {};
+  const params: Record<string, string | number | boolean | undefined> = {};
   if (input.dateFrom) params.startDate = input.dateFrom;
   if (input.dateTo) params.endDate = input.dateTo;
 

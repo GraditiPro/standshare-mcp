@@ -108,7 +108,7 @@ async function eventRevenue(client: StandShareClient, input: FinancesInput): Pro
 }
 
 async function transactions(client: StandShareClient, input: FinancesInput): Promise<ToolResult> {
-  const params: Record<string, unknown> = {};
+  const params: Record<string, string | number | boolean | undefined> = {};
   if (input.familyId) params.accountId = input.familyId;
   if (input.type) params.type = input.type;
   if (input.dateFrom) params.startDate = input.dateFrom;

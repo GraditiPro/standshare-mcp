@@ -16,10 +16,12 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface ToolSuccess {
+  [key: string]: unknown;
   content: Array<{ type: "text"; text: string }>;
 }
 
 export interface ToolError {
+  [key: string]: unknown;
   content: Array<{ type: "text"; text: string }>;
   isError: true;
 }
