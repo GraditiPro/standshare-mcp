@@ -15,6 +15,9 @@ import { handleFinances } from "./tools/finances.js";
 import { handleWorkers } from "./tools/workers.js";
 import { handleNotifications } from "./tools/notifications.js";
 import { handleReports } from "./tools/reports.js";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 dotenv.config();
 
@@ -204,6 +207,23 @@ server.tool(
     familyId: z.string().optional().describe("Family ID for compliance_status"),
   },
   async (input) => handleReports(client, input)
+);
+
+// --- Domain Guide Resource ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const guideContent = readFileSync(join(__dirname, "resources", "guide.md"), "utf-8");
+
+server.resource(
+  "guide",
+  "standshare://guide",
+  async (uri) => ({
+    contents: [{
+      uri: uri.href,
+      mimeType: "text/markdown",
+      text: guideContent,
+    }],
+  })
 );
 
 // --- Start Server ---

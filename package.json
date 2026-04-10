@@ -8,7 +8,7 @@
     "standshare-mcp": "build/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/resources build/resources",
     "start": "node build/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
