@@ -7,15 +7,32 @@
   "bin": {
     "standshare-mcp": "build/index.js"
   },
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "standshare",
+    "claude",
+    "ai-tools",
+    "fundraising"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasonCarter80/standshare-mcp.git"
+  },
+  "homepage": "https://github.com/JasonCarter80/standshare-mcp#readme",
   "scripts": {
-    "build": "tsc && cp -r src/resources build/resources",
+    "build": "tsc && mkdir -p build/resources && cp -r src/resources/* build/resources/",
+    "prepublishOnly": "npm run build",
     "start": "node build/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "dotenv": "^17.4.1",
