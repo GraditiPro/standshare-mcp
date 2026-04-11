@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml)
-[![npm version](https://img.shields.io/npm/v/standshare-mcp)](https://www.npmjs.com/package/standshare-mcp)
+[![npm version](https://img.shields.io/npm/v/%40graditipro%2Fstandshare-mcp)](https://www.npmjs.com/package/@graditipro/standshare-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-1.x-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
 
@@ -49,7 +49,7 @@ Add the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "standshare": {
       "command": "npx",
-      "args": ["-y", "standshare-mcp"],
+      "args": ["-y", "@graditipro/standshare-mcp"],
       "env": {
         "STANDSHARE_API_URL": "https://api.standshare.com",
         "STANDSHARE_TENANT_SLUG": "your-org-slug",
@@ -67,7 +67,7 @@ Add the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "standshare": {
       "command": "npx",
-      "args": ["-y", "standshare-mcp"],
+      "args": ["-y", "@graditipro/standshare-mcp"],
       "env": {
         "STANDSHARE_API_URL": "https://api.standshare.com",
         "STANDSHARE_TENANT_SLUG": "your-org-slug",
@@ -89,7 +89,7 @@ Run directly:
 STANDSHARE_API_URL=https://api.standshare.com \
 STANDSHARE_TENANT_SLUG=your-org-slug \
 STANDSHARE_API_TOKEN=your-api-token \
-npx standshare-mcp
+npx @graditipro/standshare-mcp
 ```
 
 ---
