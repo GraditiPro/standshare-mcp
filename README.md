@@ -1,7 +1,7 @@
 # standshare-mcp
 
-[![CI](https://github.com/JasonCarter80/standshare-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/JasonCarter80/standshare-mcp/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/JasonCarter80/standshare-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/JasonCarter80/standshare-mcp/actions/workflows/codeql.yml)
+[![CI](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml)
 [![npm version](https://img.shields.io/npm/v/standshare-mcp)](https://www.npmjs.com/package/standshare-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-1.x-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
@@ -121,7 +121,7 @@ Two strategies are supported:
 ## Local Development
 
 ```bash
-git clone https://github.com/JasonCarter80/standshare-mcp.git
+git clone https://github.com/GraditiPro/standshare-mcp.git
 cd standshare-mcp
 npm install
 npm run build

@@ -21,9 +21,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JasonCarter80/standshare-mcp.git"
+    "url": "git+https://github.com/GraditiPro/standshare-mcp.git"
   },
-  "homepage": "https://github.com/JasonCarter80/standshare-mcp#readme",
+  "homepage": "https://github.com/GraditiPro/standshare-mcp#readme",
   "scripts": {
     "build": "tsc && mkdir -p build/resources && cp -r src/resources/* build/resources/",
     "prepublishOnly": "npm run build",
