@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/GraditiPro/standshare-mcp/actions/workflows/codeql.yml)
+[![Socket Badge](https://socket.dev/api/badge/npm/package/@graditipro/standshare-mcp)](https://socket.dev/npm/package/@graditipro/standshare-mcp)
 [![npm version](https://img.shields.io/npm/v/%40graditipro%2Fstandshare-mcp)](https://www.npmjs.com/package/@graditipro/standshare-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP SDK](https://img.shields.io/badge/MCP%20SDK-1.x-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
