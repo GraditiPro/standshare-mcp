@@ -151,41 +151,22 @@ describe("handleNotifications", () => {
     });
   });
 
-  describe("announce", () => {
-    it("sends announcement and returns confirmation", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({});
-
+  // 1.0.0 let an AI client broadcast an org-wide announcement from here. That
+  // action must stay gone; `send` to an individual user is unchanged.
+  describe("removed announce action", () => {
+    it("announce is an unknown action and never calls the API", async () => {
       const result = await handleNotifications(client, {
         action: "announce",
-        title: "System Maintenance",
-        message: "The system will be down for maintenance at midnight.",
-      });
-
-      expect(result.content[0].text).toBe('Announcement sent: "System Maintenance"');
-      expect(client.post).toHaveBeenCalledWith("/announcements", {
-        title: "System Maintenance",
-        message: "The system will be down for maintenance at midnight.",
-      });
-    });
-
-    it("returns error when title is missing", async () => {
-      const result = await handleNotifications(client, {
-        action: "announce",
-        message: "Some announcement body.",
+        title: "t",
+        message: "m",
       });
 
       expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("title is required");
-    });
-
-    it("returns error when message is missing", async () => {
-      const result = await handleNotifications(client, {
-        action: "announce",
-        title: "Missing Body",
-      });
-
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("message is required");
+      expect(result.content[0].text).toContain("Unknown action");
+      expect(result.content[0].text.split("Valid actions:")[1]).not.toContain("announce");
+      expect(client.post).not.toHaveBeenCalled();
+      expect(client.put).not.toHaveBeenCalled();
+      expect(client.patch).not.toHaveBeenCalled();
     });
   });
 
