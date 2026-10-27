@@ -98,9 +98,7 @@ When loading historical data, follow this order (each step depends on the previo
 6. **Stands** — add stands to events (events tool, add_stand action)
 7. **Worker Assignments** — assign workers (workers tool, assign action)
 8. **Attendance** — mark historical attendance (workers tool, update_assignment with attendanceStatus: "attended")
-9. **Settlement** — record historical settlement data (finances tool, record_settlement or settle_event action)
-10. **Account Credits** — apply historical balances (finances tool, credit_account action)
-11. **Scholarships** — record historical scholarships (finances tool, record_scholarship action)
+Settlement, account credits and scholarships are recorded in the StandShare web app, not through this server.
 
 ## Glossary
 

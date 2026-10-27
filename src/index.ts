@@ -3,10 +3,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import dotenv from "dotenv";
-import { ApiTokenAuth } from "./auth/api-token.js";
-import { UserLoginAuth } from "./auth/user-login.js";
+import { resolveAuth } from "./auth/resolve.js";
 import { StandShareClient } from "./auth/client.js";
-import type { AuthStrategy } from "./types/index.js";
 import { handleEvents } from "./tools/events.js";
 import { handleFamilies } from "./tools/families.js";
 import { handleUsers } from "./tools/users.js";
@@ -15,39 +13,19 @@ import { handleFinances } from "./tools/finances.js";
 import { handleWorkers } from "./tools/workers.js";
 import { handleNotifications } from "./tools/notifications.js";
 import { handleReports } from "./tools/reports.js";
+import { FINANCES_ACTIONS, NOTIFICATIONS_ACTIONS } from "./tools/schemas.js";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 dotenv.config();
 
-function resolveAuth(): { auth: AuthStrategy; apiUrl: string; tenantSlug: string } {
-  const apiUrl = process.env.STANDSHARE_API_URL;
-  const tenantSlug = process.env.STANDSHARE_TENANT_SLUG;
-
-  if (!apiUrl) throw new Error("STANDSHARE_API_URL is required");
-  if (!tenantSlug) throw new Error("STANDSHARE_TENANT_SLUG is required");
-
-  const apiToken = process.env.STANDSHARE_API_TOKEN;
-  if (apiToken) return { auth: new ApiTokenAuth(apiToken), apiUrl, tenantSlug };
-
-  const email = process.env.STANDSHARE_EMAIL;
-  const password = process.env.STANDSHARE_PASSWORD;
-  if (email && password) {
-    return { auth: new UserLoginAuth(apiUrl, email, password, tenantSlug), apiUrl, tenantSlug };
-  }
-
-  throw new Error(
-    "Authentication required: set STANDSHARE_API_TOKEN, or both STANDSHARE_EMAIL and STANDSHARE_PASSWORD"
-  );
-}
-
-const { auth, apiUrl, tenantSlug } = resolveAuth();
+const { auth, apiUrl, tenantSlug } = resolveAuth(process.env);
 const client = new StandShareClient(apiUrl, tenantSlug, auth);
 
 const server = new McpServer({
   name: "standshare-mcp",
-  version: "1.0.0",
+  version: "1.0.1",
   description:
     "StandShare API tools for managing events, families, users, venues, finances, workers, notifications, and reports. StandShare is a family fundraising platform where organizations manage concession stand events, assign workers, track attendance, and distribute earnings to family accounts.",
 });
@@ -131,13 +109,9 @@ server.tool(
 // --- Finances Tool ---
 server.tool(
   "finances",
-  "Financial operations — view family balances, event revenue, transactions, run settlement, and record historical data. Families earn commissions from events which are distributed to their accounts after settlement.",
+  "Read-only financial views: family balances, event revenue, transactions and settlement templates. Settlement, account credits and scholarships are recorded in the StandShare web app.",
   {
-    action: z.enum([
-      "family_balance", "event_revenue", "transactions", "settle_event",
-      "record_settlement", "credit_account", "record_scholarship",
-      "list_settlement_templates", "get_settlement_template",
-    ]).describe("Action to perform"),
+    action: z.enum(FINANCES_ACTIONS).describe("Action to perform"),
     familyId: z.string().optional().describe("Family ID"),
     eventId: z.string().optional().describe("Event ID"),
     venueId: z.string().optional().describe("Venue ID for revenue filtering"),
@@ -145,18 +119,7 @@ server.tool(
     dateTo: z.string().optional().describe("End date (ISO 8601)"),
     type: z.string().optional().describe("Transaction type filter (event_commission, fund_deduction, scholarship_payment)"),
     limit: z.number().optional().describe("Number of transactions to return"),
-    settlementTemplateId: z.string().optional().describe("Settlement template ID"),
     templateId: z.string().optional().describe("Template ID (for get_settlement_template)"),
-    amount: z.number().optional().describe("Dollar amount (for credit_account, record_scholarship)"),
-    description: z.string().optional().describe("Description for ledger entry"),
-    date: z.string().optional().describe("Date for historical records (ISO 8601)"),
-    status: z.string().optional().describe("Status (for record_scholarship: pending, approved, rejected)"),
-    stands: z.array(z.object({
-      standNumber: z.number(),
-      totalCommission: z.number(),
-      ccTips: z.number(),
-      workerCount: z.number(),
-    })).optional().describe("Stand data array (for record_settlement)"),
   },
   async (input) => handleFinances(client, input)
 );
@@ -185,12 +148,12 @@ server.tool(
 // --- Notifications Tool ---
 server.tool(
   "notifications",
-  "Send and view notifications — send messages to individual users, list notifications, and broadcast announcements to the organization.",
+  "Send and view notifications — send messages to individual users and list notifications.",
   {
-    action: z.enum(["list", "send", "announce"]).describe("Action to perform"),
+    action: z.enum(NOTIFICATIONS_ACTIONS).describe("Action to perform"),
     userId: z.string().optional().describe("User ID (required for send)"),
-    title: z.string().optional().describe("Notification/announcement title"),
-    message: z.string().optional().describe("Notification/announcement body"),
+    title: z.string().optional().describe("Notification title"),
+    message: z.string().optional().describe("Notification body"),
     unreadOnly: z.boolean().optional().describe("Only show unread notifications"),
   },
   async (input) => handleNotifications(client, input)

@@ -21,10 +21,8 @@ export async function handleNotifications(
         return await listNotifications(client, input);
       case "send":
         return await sendNotification(client, input);
-      case "announce":
-        return await sendAnnouncement(client, input);
       default:
-        return toolError(`Unknown action: ${input.action}. Valid actions: list, send, announce`);
+        return toolError(`Unknown action: ${input.action}. Valid actions: list, send`);
     }
   } catch (error) {
     return toolError(error instanceof Error ? error.message : String(error));
@@ -77,19 +75,4 @@ async function sendNotification(
   });
 
   return toolSuccess(`Notification sent to user ${input.userId}: "${input.title}"`);
-}
-
-async function sendAnnouncement(
-  client: StandShareClient,
-  input: NotificationsInput
-): Promise<ToolResult> {
-  if (!input.title) return toolError("title is required for announce action");
-  if (!input.message) return toolError("message is required for announce action");
-
-  await client.post("/announcements", {
-    title: input.title,
-    message: input.message,
-  });
-
-  return toolSuccess(`Announcement sent: "${input.title}"`);
 }
