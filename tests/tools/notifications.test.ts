@@ -161,12 +161,14 @@ describe("handleNotifications", () => {
         message: "m",
       });
 
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("Unknown action");
-      expect(result.content[0].text.split("Valid actions:")[1]).not.toContain("announce");
+      // The API assertions come first so a regression that posts is reported
+      // as a post, not masked by the error-text assertions below.
       expect(client.post).not.toHaveBeenCalled();
       expect(client.put).not.toHaveBeenCalled();
       expect(client.patch).not.toHaveBeenCalled();
+      expect(result).toHaveProperty("isError", true);
+      expect(result.content[0].text).toContain("Unknown action");
+      expect(result.content[0].text.split("Valid actions:")[1]).not.toContain("announce");
     });
   });
 

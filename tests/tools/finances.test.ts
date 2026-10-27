@@ -164,11 +164,13 @@ describe("handleFinances", () => {
     it.each(removed)("%s is an unknown action and never calls the API", async (action, inputs) => {
       const result = await handleFinances(client, { action, ...inputs });
 
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("Unknown action");
+      // The API assertions come first so a regression that posts is reported
+      // as a post, not masked by the error-text assertion below.
       expect(client.post).not.toHaveBeenCalled();
       expect(client.put).not.toHaveBeenCalled();
       expect(client.patch).not.toHaveBeenCalled();
+      expect(result).toHaveProperty("isError", true);
+      expect(result.content[0].text).toContain("Unknown action");
     });
 
     it("lists only the read-only actions as valid", async () => {
