@@ -146,173 +146,41 @@ describe("handleFinances", () => {
     });
   });
 
-  describe("settle_event", () => {
-    it("returns settlement confirmation with distributed amount and worker count", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        totalDistributed: 980.0,
-        workersPaid: 7,
-        status: "completed",
-      });
+  // Money is drafted elsewhere and committed only in the StandShare web app.
+  // 1.0.0 let an AI client settle events and move money from here; these four
+  // actions must stay gone. Each input is what 1.0.0 needed to reach its POST,
+  // so the "no POST" assertion cannot pass just because validation bailed out.
+  describe("removed money actions", () => {
+    const removed: Array<[string, Record<string, unknown>]> = [
+      ["settle_event", { eventId: "e1" }],
+      [
+        "record_settlement",
+        { eventId: "e1", stands: [{ standNumber: 1, totalCommission: 1, ccTips: 0, workerCount: 1 }] },
+      ],
+      ["credit_account", { familyId: "f1", amount: 1 }],
+      ["record_scholarship", { familyId: "f1", amount: 1 }],
+    ];
 
-      const result = await handleFinances(client, {
-        action: "settle_event",
-        eventId: "evt_1",
-        settlementTemplateId: "tmpl_1",
-      });
+    it.each(removed)("%s is an unknown action and never calls the API", async (action, inputs) => {
+      const result = await handleFinances(client, { action, ...inputs });
 
-      expect(result.content[0].text).toContain("$980.00");
-      expect(result.content[0].text).toContain("7");
-      expect(result.content[0].text).toContain("completed");
-      expect(client.post).toHaveBeenCalledWith(
-        "/events/evt_1/settlement/commit",
-        expect.objectContaining({ settlementTemplateId: "tmpl_1" })
-      );
+      // The API assertions come first so a regression that posts is reported
+      // as a post, not masked by the error-text assertion below.
+      expect(client.post).not.toHaveBeenCalled();
+      expect(client.put).not.toHaveBeenCalled();
+      expect(client.patch).not.toHaveBeenCalled();
+      expect(result).toHaveProperty("isError", true);
+      expect(result.content[0].text).toContain("Unknown action");
     });
 
-    it("returns error when eventId is missing", async () => {
+    it("lists only the read-only actions as valid", async () => {
       const result = await handleFinances(client, { action: "settle_event" });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("eventId is required");
-    });
-  });
 
-  describe("record_settlement", () => {
-    it("records historical settlement and returns confirmation", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        totalDistributed: 750.0,
-        workersPaid: 5,
-        status: "recorded",
-      });
-
-      const result = await handleFinances(client, {
-        action: "record_settlement",
-        eventId: "evt_2",
-        stands: [
-          { standNumber: 1, totalCommission: 400.0, ccTips: 50.0, workerCount: 3 },
-          { standNumber: 2, totalCommission: 350.0, ccTips: 30.0, workerCount: 2 },
-        ],
-      });
-
-      expect(result.content[0].text).toContain("$750.00");
-      expect(result.content[0].text).toContain("5");
-      expect(client.post).toHaveBeenCalledWith(
-        "/events/evt_2/settlement/commit",
-        expect.objectContaining({ stands: expect.any(Array) })
-      );
-    });
-
-    it("returns error when stands is missing", async () => {
-      const result = await handleFinances(client, {
-        action: "record_settlement",
-        eventId: "evt_1",
-      });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("stands is required");
-    });
-  });
-
-  describe("credit_account", () => {
-    it("returns confirmation after crediting account", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        id: "entry_abc",
-        amount: 200.0,
-        entryType: "event_commission",
-      });
-
-      const result = await handleFinances(client, {
-        action: "credit_account",
-        familyId: "fam_1",
-        amount: 200.0,
-        description: "Manual credit",
-      });
-
-      expect(result.content[0].text).toContain("$200.00");
-      expect(result.content[0].text).toContain("event_commission");
-      expect(result.content[0].text).toContain("entry_abc");
-      expect(client.post).toHaveBeenCalledWith(
-        "/ledger/entries",
-        expect.objectContaining({
-          accountId: "fam_1",
-          amount: 200.0,
-          entryType: "event_commission",
-        })
-      );
-    });
-
-    it("uses provided type for entryType", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        id: "entry_xyz",
-        amount: 100.0,
-        entryType: "scholarship",
-      });
-
-      const result = await handleFinances(client, {
-        action: "credit_account",
-        familyId: "fam_1",
-        amount: 100.0,
-        type: "scholarship",
-      });
-
-      expect(result.content[0].text).toContain("scholarship");
-      expect(client.post).toHaveBeenCalledWith(
-        "/ledger/entries",
-        expect.objectContaining({ entryType: "scholarship" })
-      );
-    });
-
-    it("returns error when familyId is missing", async () => {
-      const result = await handleFinances(client, { action: "credit_account", amount: 100 });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("familyId is required");
-    });
-
-    it("returns error when amount is missing", async () => {
-      const result = await handleFinances(client, { action: "credit_account", familyId: "fam_1" });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("amount is required");
-    });
-  });
-
-  describe("record_scholarship", () => {
-    it("returns confirmation after recording scholarship", async () => {
-      (client.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        id: "schol_1",
-        amount: 500.0,
-        status: "approved",
-      });
-
-      const result = await handleFinances(client, {
-        action: "record_scholarship",
-        familyId: "fam_1",
-        amount: 500.0,
-        status: "approved",
-        date: "2026-04-01",
-      });
-
-      expect(result.content[0].text).toContain("$500.00");
-      expect(result.content[0].text).toContain("approved");
-      expect(result.content[0].text).toContain("schol_1");
-      expect(client.post).toHaveBeenCalledWith(
-        "/scholarships",
-        expect.objectContaining({
-          familyId: "fam_1",
-          amount: 500.0,
-          status: "approved",
-          submittedAt: "2026-04-01",
-        })
-      );
-    });
-
-    it("returns error when familyId is missing", async () => {
-      const result = await handleFinances(client, { action: "record_scholarship", amount: 500 });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("familyId is required");
-    });
-
-    it("returns error when amount is missing", async () => {
-      const result = await handleFinances(client, { action: "record_scholarship", familyId: "fam_1" });
-      expect(result).toHaveProperty("isError", true);
-      expect(result.content[0].text).toContain("amount is required");
+      const text = result.content[0].text;
+      expect(text).toContain("family_balance, event_revenue, transactions, list_settlement_templates, get_settlement_template");
+      for (const [action] of removed) {
+        expect(text.split("Valid actions:")[1]).not.toContain(action);
+      }
     });
   });
 

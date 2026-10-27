@@ -12,13 +12,7 @@ interface FinancesInput {
   dateTo?: string;
   type?: string;
   limit?: number;
-  settlementTemplateId?: string;
-  amount?: number;
-  description?: string;
-  date?: string;
-  status?: string;
   templateId?: string;
-  stands?: Array<{ standNumber: number; totalCommission: number; ccTips: number; workerCount: number }>;
 }
 
 export async function handleFinances(
@@ -33,21 +27,13 @@ export async function handleFinances(
         return await eventRevenue(client, input);
       case "transactions":
         return await transactions(client, input);
-      case "settle_event":
-        return await settleEvent(client, input);
-      case "record_settlement":
-        return await recordSettlement(client, input);
-      case "credit_account":
-        return await creditAccount(client, input);
-      case "record_scholarship":
-        return await recordScholarship(client, input);
       case "list_settlement_templates":
         return await listSettlementTemplates(client, input);
       case "get_settlement_template":
         return await getSettlementTemplate(client, input);
       default:
         return toolError(
-          `Unknown action: ${input.action}. Valid actions: family_balance, event_revenue, transactions, settle_event, record_settlement, credit_account, record_scholarship, list_settlement_templates, get_settlement_template`
+          `Unknown action: ${input.action}. Valid actions: family_balance, event_revenue, transactions, list_settlement_templates, get_settlement_template`
         );
     }
   } catch (error) {
@@ -136,97 +122,6 @@ async function transactions(client: StandShareClient, input: FinancesInput): Pro
   }));
 
   return toolSuccess(formatTable(rows));
-}
-
-async function settleEvent(client: StandShareClient, input: FinancesInput): Promise<ToolResult> {
-  if (!input.eventId) return toolError("eventId is required for settle_event action");
-
-  const body: Record<string, unknown> = {};
-  if (input.settlementTemplateId) body.settlementTemplateId = input.settlementTemplateId;
-
-  const result = await client.post<{
-    totalDistributed: number;
-    workersPaid: number;
-    status?: string;
-  }>(`/events/${input.eventId}/settlement/commit`, body);
-
-  let text = `Settlement complete.\n`;
-  text += `- Total Distributed: ${formatCurrency(result.totalDistributed)}\n`;
-  text += `- Workers Paid: ${result.workersPaid}`;
-  if (result.status) {
-    text += `\n- Status: ${result.status}`;
-  }
-
-  return toolSuccess(text);
-}
-
-async function recordSettlement(client: StandShareClient, input: FinancesInput): Promise<ToolResult> {
-  if (!input.eventId) return toolError("eventId is required for record_settlement action");
-  if (!input.stands || input.stands.length === 0) return toolError("stands is required for record_settlement action");
-
-  const body: Record<string, unknown> = {
-    stands: input.stands,
-  };
-
-  const result = await client.post<{
-    totalDistributed: number;
-    workersPaid: number;
-    status?: string;
-  }>(`/events/${input.eventId}/settlement/commit`, body);
-
-  let text = `Settlement recorded.\n`;
-  text += `- Total Distributed: ${formatCurrency(result.totalDistributed)}\n`;
-  text += `- Workers Paid: ${result.workersPaid}`;
-  if (result.status) {
-    text += `\n- Status: ${result.status}`;
-  }
-
-  return toolSuccess(text);
-}
-
-async function creditAccount(client: StandShareClient, input: FinancesInput): Promise<ToolResult> {
-  if (!input.familyId) return toolError("familyId is required for credit_account action");
-  if (input.amount === undefined) return toolError("amount is required for credit_account action");
-
-  const body: Record<string, unknown> = {
-    accountId: input.familyId,
-    amount: input.amount,
-    entryType: input.type ?? "event_commission",
-  };
-  if (input.description) body.description = input.description;
-  if (input.date) body.reference = input.date;
-
-  const result = await client.post<{
-    id: string;
-    amount: number;
-    entryType: string;
-  }>("/ledger/entries", body);
-
-  return toolSuccess(
-    `Credited ${formatCurrency(result.amount)} (${result.entryType}) to account — entry ${result.id}`
-  );
-}
-
-async function recordScholarship(client: StandShareClient, input: FinancesInput): Promise<ToolResult> {
-  if (!input.familyId) return toolError("familyId is required for record_scholarship action");
-  if (input.amount === undefined) return toolError("amount is required for record_scholarship action");
-
-  const body: Record<string, unknown> = {
-    familyId: input.familyId,
-    amount: input.amount,
-  };
-  if (input.status) body.status = input.status;
-  if (input.date) body.submittedAt = input.date;
-
-  const result = await client.post<{
-    id: string;
-    amount: number;
-    status: string;
-  }>("/scholarships", body);
-
-  return toolSuccess(
-    `Scholarship recorded: ${formatCurrency(result.amount)} — status: ${result.status} (${result.id})`
-  );
 }
 
 async function listSettlementTemplates(client: StandShareClient, _input: FinancesInput): Promise<ToolResult> {

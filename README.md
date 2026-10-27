@@ -11,6 +11,8 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server for th
 
 StandShare is a family fundraising platform where organizations manage concession stand events, assign workers, track attendance, and distribute earnings to family accounts.
 
+> **Security notice.** Earlier versions of this README showed `https://api.standshare.com`. StandShare does not own that domain. If you used that URL, revoke the API key you configured in StandShare (`/admin/org-settings/api-keys`) and create a new one. If you signed in with an email and password instead, change that password. From 1.0.1 the server refuses any `STANDSHARE_API_URL` that is not a StandShare host.
+
 ---
 
 ## Tools
@@ -21,16 +23,24 @@ StandShare is a family fundraising platform where organizations manage concessio
 | `families` | Search, view (with balance), create families; add members |
 | `users` | Search, view, create, and invite user accounts |
 | `venues` | Search and view venue details |
-| `finances` | Family balances, event revenue, transactions, settlement, credits, scholarships |
+| `finances` | Family balances, event revenue, transactions, settlement templates (read-only) |
 | `workers` | Event rosters, assign workers, update attendance, check availability, view history |
-| `notifications` | List, send to individual users, and broadcast org-wide announcements |
+| `notifications` | List notifications and send to individual users |
 | `reports` | Admin dashboard KPIs, financial summaries, family compliance status |
+
+Money is never moved through this server. Settlement, account credits and scholarships are recorded in the StandShare web app.
 
 ## Resources
 
 | URI | Description |
 |-----|-------------|
 | `standshare://guide` | Domain guide covering the entity model, financial model, and migration playbook |
+
+---
+
+## Replacement
+
+The hosted StandShare MCP server at `https://api.standshare.app/mcp` is the supported way to connect an MCP client to StandShare. Sign in with OAuth.
 
 ---
 
@@ -43,7 +53,7 @@ Add the following to your `claude_desktop_config.json`:
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-#### Option A — API Token (recommended)
+#### API token
 
 ```json
 {
@@ -52,28 +62,9 @@ Add the following to your `claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "@graditipro/standshare-mcp"],
       "env": {
-        "STANDSHARE_API_URL": "https://api.standshare.com",
+        "STANDSHARE_API_URL": "https://api.standshare.app",
         "STANDSHARE_TENANT_SLUG": "your-org-slug",
         "STANDSHARE_API_TOKEN": "your-api-token"
-      }
-    }
-  }
-}
-```
-
-#### Option B — Email & Password
-
-```json
-{
-  "mcpServers": {
-    "standshare": {
-      "command": "npx",
-      "args": ["-y", "@graditipro/standshare-mcp"],
-      "env": {
-        "STANDSHARE_API_URL": "https://api.standshare.com",
-        "STANDSHARE_TENANT_SLUG": "your-org-slug",
-        "STANDSHARE_EMAIL": "admin@yourorg.com",
-        "STANDSHARE_PASSWORD": "your-password"
       }
     }
   }
@@ -87,7 +78,7 @@ After editing, restart Claude Desktop. Verify the server loaded via the hammer i
 Run directly:
 
 ```bash
-STANDSHARE_API_URL=https://api.standshare.com \
+STANDSHARE_API_URL=https://api.standshare.app \
 STANDSHARE_TENANT_SLUG=your-org-slug \
 STANDSHARE_API_TOKEN=your-api-token \
 npx @graditipro/standshare-mcp
@@ -99,23 +90,15 @@ npx @graditipro/standshare-mcp
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `STANDSHARE_API_URL` | Yes | Base URL of your StandShare API instance |
+| `STANDSHARE_API_URL` | Yes | `https://api.standshare.app`. Only StandShare hosts (`standshare.app` and its subdomains) and `localhost` / `127.0.0.1` / `[::1]` for local development are accepted |
 | `STANDSHARE_TENANT_SLUG` | Yes | Your organization's tenant slug |
-| `STANDSHARE_API_TOKEN` | One of* | API token for token-based auth |
-| `STANDSHARE_EMAIL` | One of* | Admin email for credential-based auth |
-| `STANDSHARE_PASSWORD` | One of* | Admin password for credential-based auth |
-
-\* Either `STANDSHARE_API_TOKEN` **or** both `STANDSHARE_EMAIL` + `STANDSHARE_PASSWORD` must be set.
+| `STANDSHARE_API_TOKEN` | Yes | API key created in StandShare at `/admin/org-settings/api-keys` |
 
 ---
 
 ## Authentication
 
-Two strategies are supported:
-
-**API Token** — Set `STANDSHARE_API_TOKEN`. The token is sent as a `Bearer` header on every request. Preferred for production and automated use.
-
-**Email / Password** — Set `STANDSHARE_EMAIL` and `STANDSHARE_PASSWORD`. The server logs in on first use, then uses refresh tokens to maintain the session automatically.
+Set `STANDSHARE_API_TOKEN`. The token is sent as a `Bearer` header on every request. Email and password sign-in was removed in 1.0.1.
 
 ---
 
@@ -128,7 +111,7 @@ npm install
 npm run build
 ```
 
-To run from a local build in Claude Desktop, replace `"npx", ["-y", "standshare-mcp"]` with:
+To run from a local build in Claude Desktop, replace `"npx", ["-y", "@graditipro/standshare-mcp"]` with:
 
 ```json
 {
