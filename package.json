@@ -1,6 +1,6 @@
 {
   "name": "@graditipro/standshare-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for StandShare API — composable domain tools for org admins, coordinators, and support staff",
   "type": "module",
   "main": "build/index.js",
